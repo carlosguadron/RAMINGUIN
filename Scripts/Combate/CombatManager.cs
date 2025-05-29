@@ -36,6 +36,9 @@ public class CombatManager : MonoBehaviour
     public GameObject panelVictoria;
     public GameObject panelDerrota;
 
+    [Header("Posiciones de Teletransporte")]
+    public Transform postCombatSpawnPoint; // Asigna el punto de teletransporte post-combate
+
     private void Awake()
     {
         if (Instance == null)
@@ -109,7 +112,43 @@ public class CombatManager : MonoBehaviour
 
     public void FinalizarCombate(bool victoria)
     {
-        StartCoroutine(SequenciaFinCombate(victoria));
+        enCombate = false;
+
+        // UI de resultado
+        if (victoria && panelVictoria != null)
+        {
+            panelVictoria.SetActive(true);
+            // Teletransportar al jugador después de un breve delay
+            StartCoroutine(TeletransportarJugador(2f)); // 2 segundos de delay
+        }
+        else if (!victoria && panelDerrota != null)
+        {
+            panelDerrota.SetActive(true);
+        }
+
+        // Reactivar jugador
+        playerController?.DesactivarModoCombate();
+
+        // Desactivar UI de combate
+        if (panelCombate != null) panelCombate.SetActive(false);
+    }
+
+    private IEnumerator TeletransportarJugador(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (postCombatSpawnPoint != null && playerController != null)
+        {
+            // Teletransportar al jugador
+            playerController.transform.position = postCombatSpawnPoint.position;
+
+            // Restaurar cámaras
+            if (camaraPrimeraPersona != null) camaraPrimeraPersona.gameObject.SetActive(true);
+            if (camaraTerceraPersona != null) camaraTerceraPersona.gameObject.SetActive(false);
+
+            // Desactivar panel de victoria
+            if (panelVictoria != null) panelVictoria.SetActive(false);
+        }
     }
 
     IEnumerator SequenciaFinCombate(bool victoria)

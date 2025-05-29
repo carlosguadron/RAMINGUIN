@@ -126,15 +126,16 @@ public class GameManager : MonoBehaviour
         turnoJugador = true;
         scoreTurno = 0;
 
-        // Solo llamar a DesactivarModoCombate si es victoria
         if (jugadorGana)
         {
             playerController.DesactivarModoCombate();
+            CombatManager.Instance?.FinalizarCombate(true); // Notificar al CombatManager
         }
         else
         {
             playerController.SetControlActive(true);
             playerController.RestaurarCamaras();
+            CombatManager.Instance?.MostrarResultado(false);
         }
     }
 
