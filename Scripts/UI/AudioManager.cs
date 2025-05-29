@@ -3,14 +3,13 @@ using UnityEngine.Audio;
 
 public class AudioManager : MonoBehaviour
 {
-    public static AudioManager Instance;
+    public static AudioManager Instance { get; private set; }
 
     [Header("Configuración de Audio")]
-    public AudioMixer mixer;
     public AudioSource musicaFondo;
-    public AudioClip[] canciones;
 
-    [Range(0f, 1f)] public float volumenMusica = 1f;
+    [Range(0f, 1f)]
+    public float volumenMusica = 1f;
 
     private void Awake()
     {
@@ -19,9 +18,13 @@ public class AudioManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // Cargar configuración guardada
+            // Configuración inicial del AudioSource
+            musicaFondo.volume = 0f; // Empieza en 0
             volumenMusica = PlayerPrefs.GetFloat("VolumenMusica", 0.7f);
-            ActualizarVolumenes();
+            ActualizarVolumen();
+
+            if (!musicaFondo.isPlaying)
+                musicaFondo.Play();
         }
         else
         {
@@ -29,28 +32,22 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    public void ActualizarVolumenes()
+    public void ActualizarVolumen()
     {
-        // Actualiza ambos sistemas:
-        // Mixer (si lo usas)
-        if (mixer != null)
-        {
-            mixer.SetFloat("VolumenMusica", Mathf.Log10(volumenMusica) * 20);
-        }
+        // Asegurarse que el volumen llega realmente a 0
+        float volumenClamped = Mathf.Clamp(volumenMusica, 0f, 1f);
 
-        // AudioSource directo
-        if (musicaFondo != null)
-        {
-            musicaFondo.volume = volumenMusica;
-        }
+        musicaFondo.volume = volumenClamped;
 
-        PlayerPrefs.SetFloat("VolumenMusica", volumenMusica);
+        // Silenciar completamente si está en 0
+        musicaFondo.mute = (volumenClamped <= 0.001f);
+
+        PlayerPrefs.SetFloat("VolumenMusica", volumenClamped);
+        PlayerPrefs.Save();
     }
 
     public void PausarMusica(bool pausar)
     {
-        if (musicaFondo == null) return;
-
         if (pausar) musicaFondo.Pause();
         else musicaFondo.UnPause();
     }
