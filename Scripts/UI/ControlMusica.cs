@@ -7,14 +7,14 @@ public class ControlMusica : MonoBehaviour
 
     void Start()
     {
-        // Configurar el slider con el valor actual
-        sliderMusica.value = GameManager.Instance.volumenMusica;
+        // Usar el valor de AudioManager en lugar de GameManager
+        sliderMusica.value = AudioManager.Instance.volumenMusica;
+        sliderMusica.onValueChanged.AddListener(CambiarVolumen);
     }
 
     public void CambiarVolumen(float nuevoVolumen)
     {
-        // Actualizar el volumen en el GameManager
-        GameManager.Instance.volumenMusica = nuevoVolumen;
-        GameManager.Instance.ActualizarVolumenMusica();
+        AudioManager.Instance.volumenMusica = nuevoVolumen;
+        AudioManager.Instance.ActualizarVolumenes();
     }
 }

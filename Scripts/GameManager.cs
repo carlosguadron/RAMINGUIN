@@ -2,6 +2,7 @@
 using TMPro;
 using System.Collections;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class GameManager : MonoBehaviour
     public Rigidbody pelota;
 
     [Header("Audio Settings")]
-    public AudioSource musicaFondo; // Asigna tu objeto MusicaFondo aquí
+    public AudioSource musicaFondo;
     [Range(0f, 1f)] public float volumenMusica = 1f;
 
     private int score = 0;
@@ -44,15 +45,16 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        // Elimina cualquier SetCursorState del Start
         UpdateScoreUI();
-        SetCursorState(false);
 
-        // Cargar volumen guardado
-        volumenMusica = PlayerPrefs.GetFloat("VolumenMusica", 1f);
-        ActualizarVolumenMusica();
+        // Solo cargar volumen si no hay otro manager haciéndolo
+        if (AudioManager.Instance == null)
+        {
+            volumenMusica = PlayerPrefs.GetFloat("VolumenMusica", 1f);
+            ActualizarVolumenMusica();
+        }
     }
-
-    // Método para actualizar el volumen
     public void ActualizarVolumenMusica()
     {
         if (musicaFondo != null)
@@ -62,11 +64,9 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetFloat("VolumenMusica", volumenMusica);
     }
 
-    // Método para pausar/reanudar música
     public void PausarMusica(bool pausar)
     {
         if (musicaFondo == null) return;
-
         if (pausar) musicaFondo.Pause();
         else musicaFondo.UnPause();
     }
